@@ -1,30 +1,46 @@
 package io.valueof.diffutil.ui.main
 
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import com.zhuinden.fragmentviewbindingdelegatekt.viewBinding
 import io.valueof.diffutil.R
+import io.valueof.diffutil.databinding.MainFragmentBinding
+import kotlinx.coroutines.flow.collect
+import timber.log.Timber
 
-class MainFragment : Fragment() {
+class MainFragment : Fragment(R.layout.main_fragment) {
 
   companion object {
     fun newInstance() = MainFragment()
   }
 
+  private val binding by viewBinding(MainFragmentBinding::bind)
+
   private lateinit var viewModel: MainViewModel
 
-  override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                            savedInstanceState: Bundle?): View {
-    return inflater.inflate(R.layout.main_fragment, container, false)
-  }
+  private val itemAdapter = ItemAdapter(this::toggleFavoriteStatus)
 
-  override fun onActivityCreated(savedInstanceState: Bundle?) {
-    super.onActivityCreated(savedInstanceState)
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    super.onViewCreated(view, savedInstanceState)
     viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-    // TODO: Use the ViewModel
+
+    binding.recyclerView.apply {
+      setHasFixedSize(true)
+      adapter = itemAdapter
+    }
+
+    lifecycleScope.launchWhenResumed {
+      viewModel.itemList.collect { itemList ->
+        Timber.d("current item list $itemList")
+        itemAdapter.submitList(itemList)
+      }
+    }
   }
 
+  private fun toggleFavoriteStatus(id: String, isFavorite: Boolean) {
+    viewModel.toggleFavoriteStatus(id, isFavorite)
+  }
 }

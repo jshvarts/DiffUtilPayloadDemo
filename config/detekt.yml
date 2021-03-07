@@ -250,8 +250,8 @@ formatting:
   Indentation:
     active: true
     autoCorrect: true
-    indentSize: 4
-    continuationIndentSize: 4
+    indentSize: 2
+    continuationIndentSize: 2
   MaximumLineLength:
     active: true
     maxLineLength: 120
